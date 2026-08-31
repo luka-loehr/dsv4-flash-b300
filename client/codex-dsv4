@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# codex-dsv4 — launch OpenAI Codex CLI against the DeepSeek-V4-Flash B300 endpoint.
+# Recent Codex (>= ~0.140) only speaks the OpenAI Responses API, which vLLM also
+# serves at <pod>/v1/responses. Points Codex there via a custom model_provider
+# (no edits to your ~/.codex/config.toml).
+set -euo pipefail
+
+# shellcheck source=/dev/null
+[ -f "$HOME/.config/dsv4/env" ] && . "$HOME/.config/dsv4/env"
+: "${DSV4_POD_URL:?DSV4_POD_URL not set — run client/install.sh}"
+export DSV4_API_KEY="${DSV4_API_KEY:-sk-dsv4-local-token}"
+
+exec codex \
+  -c model="dsv4" \
+  -c model_provider="dsv4" \
+  -c model_providers.dsv4.name="DeepSeek-V4-Flash B300" \
+  -c model_providers.dsv4.base_url="${DSV4_POD_URL%/}/v1" \
+  -c model_providers.dsv4.env_key="DSV4_API_KEY" \
+  -c model_providers.dsv4.wire_api="responses" \
+  "$@"

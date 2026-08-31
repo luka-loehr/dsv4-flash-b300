@@ -1,0 +1,32 @@
+<svg width="1280" height="360" viewBox="0 0 1280 360" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" aria-label="dsv4-flash-b300 banner">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0a0a0b"/>
+      <stop offset="1" stop-color="#131316"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#e8c98a" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#e8c98a" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1280" height="360" fill="url(#bg)"/>
+  <rect x="0" y="0" width="1280" height="1" fill="#1f1f23"/>
+  <rect x="0" y="359" width="1280" height="1" fill="#1f1f23"/>
+
+  <!-- device: warm glow + image on the right -->
+  <ellipse cx="1018" cy="182" rx="245" ry="176" fill="url(#glow)"/>
+  <image xlink:href="b300-device.png" x="852" y="34" width="333" height="292"/>
+
+  <!-- text on the left -->
+  <g>
+    <text x="96" y="150" font-family="Menlo,ui-monospace,SFMono-Regular,monospace" font-size="52" letter-spacing="1" fill="#f4f4f5">dsv4-flash-<tspan fill="#d9b779">b300</tspan></text>
+    <rect x="98" y="176" width="64" height="2" fill="#3f3f46"/>
+    <text x="96" y="216" font-family="Helvetica Neue,-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="21" fill="#a1a1aa">DeepSeek-V4-Flash-0731 (Abliterated) on one NVIDIA B300</text>
+    <g font-family="Menlo,ui-monospace,SFMono-Regular,monospace" fill="#71717a" font-size="15">
+      <text x="96" y="262">366 tok/s single stream · DSpark-7 speculative · FP8 KV · 1M context</text>
+      <text x="96" y="288">Anthropic + OpenAI API — Claude Code · Codex · Pi · OpenCode</text>
+      <text x="96" y="314">vLLM 0.26 · one-click RunPod template · MIT</text>
+    </g>
+  </g>
+</svg>

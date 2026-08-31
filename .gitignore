@@ -1,0 +1,13 @@
+.DS_Store
+*.tmp
+*.log
+*.swp
+__pycache__/
+*.pyc
+env
+secrets/
+.env
+
+# wrangler local cache / node deps
+.wrangler/
+node_modules/

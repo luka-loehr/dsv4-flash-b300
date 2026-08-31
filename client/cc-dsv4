@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# cc-dsv4 — launch Claude Code against the DeepSeek-V4-Flash B300 endpoint.
+# Uses the Anthropic Messages API that vLLM serves at <pod>/v1/messages.
+# Reads DSV4_POD_URL / DSV4_API_KEY from ~/.config/dsv4/env (written by install.sh);
+# override per-run with:  DSV4_POD_URL=https://<pod-id>-8000.proxy.runpod.net cc-dsv4
+set -euo pipefail
+
+# shellcheck source=/dev/null
+[ -f "$HOME/.config/dsv4/env" ] && . "$HOME/.config/dsv4/env"
+if [ -z "${DSV4_POD_URL:-}" ] && [ -n "${DSV4_POD_ID:-}" ]; then
+  DSV4_POD_URL="https://${DSV4_POD_ID}-8000.proxy.runpod.net"
+fi
+if [ -z "${DSV4_POD_URL:-}" ]; then
+  echo "cc-dsv4: DSV4_POD_URL is not set. Run client/install.sh, or pass" >&2
+  echo "  DSV4_POD_URL=https://<pod-id>-8000.proxy.runpod.net cc-dsv4" >&2
+  exit 1
+fi
+
+export ANTHROPIC_BASE_URL="${DSV4_POD_URL%/}"
+export ANTHROPIC_API_KEY="${DSV4_API_KEY:-sk-dsv4-local-token}"
+export ANTHROPIC_AUTH_TOKEN="${DSV4_API_KEY:-sk-dsv4-local-token}"
+export ANTHROPIC_DEFAULT_OPUS_MODEL="dsv4"
+export ANTHROPIC_DEFAULT_SONNET_MODEL="dsv4"
+export ANTHROPIC_DEFAULT_HAIKU_MODEL="dsv4"
+export ANTHROPIC_MODEL="dsv4"
+export CLAUDE_CODE_MAX_CONTEXT_TOKENS=1048576
+export CLAUDE_CODE_MAX_OUTPUT_TOKENS=131072
+export CLAUDE_CODE_DISABLE_UNKNOWN_MODEL_WINDOW_ENFORCEMENT=1
+export ENABLE_TOOL_SEARCH=true
+
+exec claude "$@"

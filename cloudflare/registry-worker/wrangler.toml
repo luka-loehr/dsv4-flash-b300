@@ -1,0 +1,20 @@
+# dsv4-registry — pull-only OCI registry on Cloudflare R2.
+# Deploy with the small-scoped token (see cloudflare/README.md); account id is
+# passed via CLOUDFLARE_ACCOUNT_ID so nothing account-specific is committed.
+name = "dsv4-registry"
+main = "src/index.js"
+compatibility_date = "2026-08-01"
+
+# Served on a custom domain (dsv4-registry.lukaloehr.com); the *.workers.dev URL
+# is disabled. The custom domain is attached once via cloudflare/setup-domain.sh
+# so the deploy token can stay minimal (Workers Scripts + R2 only).
+workers_dev = false
+
+# The bucket that holds the image (manifests + blobs). Runtime pulls read this
+# through the binding — no S3 token at the edge.
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "dsv4-registry"
+
+[observability]
+enabled = true
