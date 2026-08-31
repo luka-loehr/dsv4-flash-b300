@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+# pi-dsv4 — launch Pi (earendil-works/pi) against the DeepSeek-V4-Flash B300 endpoint.
+# Pi configures providers in ~/.pi/agent/models.json (no base-url flag/env), so we
+# upsert a "dsv4" provider there with the current URL + key (other providers kept),
+# then run Pi against it.
+set -euo pipefail
+
+# shellcheck source=/dev/null
+[ -f "$HOME/.config/dsv4/env" ] && . "$HOME/.config/dsv4/env"
+: "${DSV4_POD_URL:?DSV4_POD_URL not set — run client/install.sh}"
+export DSV4_BASE="${DSV4_POD_URL%/}/v1"
+export DSV4_KEY="${DSV4_API_KEY:-sk-dsv4-local-token}"
+export DSV4_MJ="$HOME/.pi/agent/models.json"
+mkdir -p "$HOME/.pi/agent"
+
+python3 - <<'PY'
+import json, os
+mj = os.environ["DSV4_MJ"]
+try:
+    d = json.load(open(mj))
+except Exception:
+    d = {}
+d.setdefault("providers", {})
+d["providers"]["dsv4"] = {
+    "baseUrl": os.environ["DSV4_BASE"],
+    "api": "openai-completions",
+    "apiKey": os.environ["DSV4_KEY"],
+    "models": [{"id": "dsv4", "name": "DeepSeek-V4-Flash B300 (1M Context)",
+                "contextWindow": 1048576, "maxTokens": 131072}],
+}
+json.dump(d, open(mj, "w"), indent=2)
+PY
+
+exec pi --provider dsv4 --model dsv4/dsv4 "$@"

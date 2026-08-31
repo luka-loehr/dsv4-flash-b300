@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# aider-dsv4 — launch Aider against the DeepSeek-V4-Flash B300 endpoint.
+# Aider talks to the OpenAI-compatible API vLLM serves at <pod>/v1.
+set -euo pipefail
+
+# shellcheck source=/dev/null
+[ -f "$HOME/.config/dsv4/env" ] && . "$HOME/.config/dsv4/env"
+: "${DSV4_POD_URL:?DSV4_POD_URL not set — run client/install.sh}"
+export OPENAI_API_BASE="${DSV4_POD_URL%/}/v1"
+export OPENAI_API_KEY="${DSV4_API_KEY:-sk-dsv4-local-token}"
+
+exec aider --model "openai/dsv4" "$@"

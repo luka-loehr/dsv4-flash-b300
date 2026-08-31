@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# opencode-dsv4 — launch OpenCode against the DeepSeek-V4-Flash B300 endpoint.
+# Writes a dedicated OpenCode config (never touches your global one) that adds a
+# custom OpenAI-compatible provider pointing at vLLM's <pod>/v1, then runs opencode.
+set -euo pipefail
+
+# shellcheck source=/dev/null
+[ -f "$HOME/.config/dsv4/env" ] && . "$HOME/.config/dsv4/env"
+: "${DSV4_POD_URL:?DSV4_POD_URL not set — run client/install.sh}"
+KEY="${DSV4_API_KEY:-sk-dsv4-local-token}"
+BASE="${DSV4_POD_URL%/}/v1"
+CFG="$HOME/.config/dsv4/opencode.json"
+mkdir -p "$HOME/.config/dsv4"
+
+cat > "$CFG" <<JSON
+{
+  "\$schema": "https://opencode.ai/config.json",
+  "model": "dsv4/dsv4",
+  "provider": {
+    "dsv4": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "DeepSeek-V4-Flash B300",
+      "options": { "baseURL": "${BASE}", "apiKey": "${KEY}" },
+      "models": { "dsv4": { "name": "DeepSeek-V4-Flash" } }
+    }
+  }
+}
+JSON
+
+export OPENCODE_CONFIG="$CFG"
+exec opencode "$@"
