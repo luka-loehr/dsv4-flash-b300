@@ -7,7 +7,6 @@
 # Prereqs:
 #   • runpodctl configured (runpodctl doctor)
 #   • a network volume that holds the checkpoint at /workspace/models/<name>
-#   • the runtime image built by CI (.github/workflows/publish-runtime-image.yml)
 #   • R2 upload creds (bucket-scoped) + the R2 S3 endpoint
 #
 # Usage:
@@ -19,6 +18,7 @@ set -Eeuo pipefail
 
 VERSION="${VERSION:?set VERSION}"; VOLUME_ID="${VOLUME_ID:?set VOLUME_ID}"
 DATACENTER="${DATACENTER:-EU-NL-1}"
+REGISTRY="${REGISTRY:-dsv4-registry.lukaloehr.com}"   # public host that serves the R2 bucket
 : "${R2_ENDPOINT:?set R2_ENDPOINT}"; : "${AWS_ACCESS_KEY_ID:?}"; : "${AWS_SECRET_ACCESS_KEY:?}"
 GPU="${GPU_ID:-NVIDIA B300 SXM6 AC}"
 KEY="${RUNPOD_SSH_KEY:-$HOME/.ssh/runpod_ed25519}"
@@ -37,7 +37,7 @@ runpodctl pod create --name dsv4-image-build \
   --container-disk-in-gb 300 --ports "22/tcp" --env "$ENVJSON" >/dev/null
 
 # resolve ssh once the container is up
-for i in $(seq 1 40); do
+for _ in $(seq 1 40); do
   INFO=$(runpodctl ssh info dsv4-image-build 2>/dev/null || true)
   echo "$INFO" | grep -q ssh_command && break; sleep 6
 done
@@ -55,4 +55,4 @@ echo "==> building off the volume and uploading to R2"
 ssh -i "$KEY" -p "$PORT" $SO "root@$IP" \
   "AWS_ACCESS_KEY_ID='$AWS_ACCESS_KEY_ID' AWS_SECRET_ACCESS_KEY='$AWS_SECRET_ACCESS_KEY' R2_ENDPOINT='$R2_ENDPOINT' VERSION='$VERSION' bash /root/build-to-r2.sh"
 
-echo "==> done: dsv4-registry.lukaloehr.com/dsv4-flash-b300:${VERSION} (+ :latest)"
+echo "==> done: ${REGISTRY}/dsv4-flash-b300:${VERSION} (+ :latest)"

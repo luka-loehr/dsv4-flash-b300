@@ -36,7 +36,7 @@ mkdir -p "$REGDATA"
 printf 'version: 0.1\nstorage:\n  filesystem:\n    rootdirectory: %s\n  delete:\n    enabled: true\nhttp:\n  addr: 127.0.0.1:5000\n' "$REGDATA" > /root/registry.yml
 pkill -f "registry serve" 2>/dev/null || true; sleep 1
 nohup registry serve /root/registry.yml >/root/registry.log 2>&1 &
-for i in $(seq 1 30); do curl -sf http://127.0.0.1:5000/v2/ >/dev/null 2>&1 && break; sleep 1; done
+for _ in $(seq 1 30); do curl -sf http://127.0.0.1:5000/v2/ >/dev/null 2>&1 && break; sleep 1; done
 
 echo "== build runtime with kaniko (NO GHCR) =="
 # kaniko rewrites '/', which would clobber the injected SSH key — guard it.

@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
 # dsv4-entrypoint — entrypoint for the all-in-one dsv4-flash-b300 image.
 #
-# EVERYTHING is baked into the image: the 156 GB checkpoint (/models), the vLLM
-# 0.26 runtime (/opt/venvs/dsv4), and the full FlashInfer cubin set
-# (/root/.cache/flashinfer). There is nothing to download and no volume to mount
-# — pull the image, run it on a Blackwell GPU, and it serves. Only the GPU-JIT'd
-# TileLang/DeepGEMM kernels compile on first serve (a few minutes, no downloads).
+# Baked into the image: the 156 GB checkpoint (/models), the vLLM 0.26 runtime
+# (/opt/venvs/dsv4), and a partial FlashInfer cubin cache (/root/.cache/flashinfer).
+# No model download and no volume. On first serve, remaining cubins are fetched
+# from NVIDIA and the MoE/attention/TileLang/DeepGEMM kernels JIT-compile, which
+# can take 20+ minutes (see docs/PERFORMANCE.md).
 set -uo pipefail
 
 export DSV4_MODEL="${DSV4_MODEL:-/models/DeepSeek-V4-Flash-0731-abliterated}"
 LOG="/workspace/logs/vllm.log"
 banner() { printf '\n\033[1;36m════════════════════════════════════════════════════════════════\033[0m\n'; }
 
-echo "[dsv4] all-in-one image boot — model + runtime + cubins baked, zero downloads"
+echo "[dsv4] all-in-one image boot — model + runtime baked, no model download"
 mkdir -p /workspace/scripts /workspace/secrets /workspace/logs
 
 # 0. SSH (RunPod injects PUBLIC_KEY; we own the entrypoint so we set it up).
@@ -42,11 +42,11 @@ if [ ! -s "$DSV4_MODEL/config.json" ]; then
   exec sleep infinity
 fi
 
-# 4. Serve (runtime + cubins already local; nothing to fetch).
+# 4. Serve (model + runtime local; remaining cubins are fetched on first serve).
 echo "[dsv4] starting vLLM (profile=${DSV4_PROFILE:-fast}) from baked runtime..."
 bash /workspace/scripts/start-vllm.sh "${DSV4_PROFILE:-fast}"
 
-# 5. Wait for health (only GPU-JIT kernels compile now — no downloads).
+# 5. Wait for health (GPU kernels JIT-compile during first serve).
 echo "[dsv4] waiting for http://127.0.0.1:8000/health ..."
 READY=0
 for _ in $(seq 1 180); do
@@ -59,7 +59,7 @@ done
 POD="${RUNPOD_POD_ID:-<pod-id>}"
 PUBLIC_URL="https://${POD}-8000.proxy.runpod.net"
 banner
-[ "$READY" = "1" ] && echo "  ✅  DeepSeek-V4-Flash is SERVING (zero downloads)" \
+[ "$READY" = "1" ] && echo "  ✅  DeepSeek-V4-Flash is SERVING" \
                    || echo "  ⏳  not healthy yet — GPU kernels still compiling; see the log below"
 echo
 echo "  Endpoint : $PUBLIC_URL   (model: dsv4)"

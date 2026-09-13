@@ -5,13 +5,14 @@
 # entrypoint serves and prints the endpoint + API key to the pod log.
 #
 # Usage:  ./runpod/create-template.sh
+#         REGISTRY=registry.example.com VERSION=1.0.0 ./runpod/create-template.sh
 set -euo pipefail
 
 REGISTRY="${REGISTRY:-dsv4-registry.lukaloehr.com}"
 VERSION="${VERSION:-1.0.0}"
 IMAGE="${REGISTRY}/dsv4-flash-b300:${VERSION}"
 
-READ_ME="MIT by Luka Löhr. All-in-one: DeepSeek-V4-Flash-0731 (abliterated) + vLLM 0.26 + FlashInfer cubins baked into the image — pull and run on one NVIDIA B300, ZERO downloads, no volume. Serves the Anthropic + OpenAI APIs (Claude Code, Codex, Pi, OpenCode, Aider); prints the endpoint + API key to the pod log. The ~185 GB image is served from a Cloudflare R2 registry and the pull is PUBLIC and not rate-limited — no registry credential needed. Source: https://github.com/luka-loehr/dsv4-flash-b300"
+READ_ME="MIT by Luka Löhr. All-in-one: DeepSeek-V4-Flash-0731 (abliterated) + vLLM 0.26 + FlashInfer cubins baked into the image — pull and run on one NVIDIA B300, no model download, no volume. A fresh pod takes ~70 min to first health (pull, extract, weight load, first-serve kernel compile). Serves the Anthropic + OpenAI APIs (Claude Code, Codex, Pi, OpenCode, Aider); prints the endpoint + API key to the pod log. The ~185 GB image is served from a Cloudflare R2 registry and the pull is public and needs no registry credential. Abliterated model: safety refusals were removed upstream; you are responsible for lawful use and provider terms. Source: https://github.com/luka-loehr/dsv4-flash-b300"
 
 echo "Creating RunPod template for $IMAGE"
 runpodctl template create \

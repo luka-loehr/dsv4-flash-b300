@@ -3,11 +3,11 @@
 #
 # This builds the runtime: vLLM 0.26 (CUDA 13 / torch 2.11) + the full FlashInfer
 # TRTLLM-GEN cubin set + the server scripts + the entrypoint. It does NOT contain
-# the 156 GB checkpoint — that layer is added on top by ops/build-on-runpod.sh
-# (buildah copy from the model volume), producing the final ~166 GB image.
+# the 156 GB checkpoint — that layer is added on top by ops/build-to-r2.sh
+# (ops/append-layers.go, off the model volume), producing the final ~185 GB image.
 #
-# The runtime layer alone is small enough to build in CI; the model layer needs a
-# big-disk host, which is why the model is added separately.
+# It is built with kaniko by ops/build-to-r2.sh; the model layer needs a big-disk
+# host, which is why the model is added separately.
 
 FROM runpod/pytorch:1.0.3-cu1300-torch291-ubuntu2404
 
@@ -28,7 +28,7 @@ RUN uv venv /opt/venvs/dsv4 --python /usr/bin/python3 --seed \
         --index-strategy unsafe-best-match \
     && /opt/venvs/dsv4/bin/python -c "import vllm, torch; print('vllm', vllm.__version__, 'torch', torch.__version__)"
 
-# Pre-fetch FlashInfer cubins so first serve needs (near) zero downloads. The full
+# Pre-fetch FlashInfer cubins to reduce what first serve has to fetch. The full
 # TRTLLM-GEN set is ~16k cubins and NVIDIA's artifactory throttles hard (hours to
 # pull all of them), so this is time-bounded: it bakes what it can within the
 # window and vLLM fetches any remaining shape on first serve. Not fatal if partial.

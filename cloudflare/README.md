@@ -76,7 +76,7 @@ token-shaped is written into the repo. The custom domain is attached once (see
 | [`registry-worker/`](registry-worker/) | The Worker (`wrangler.toml` + `src/index.js`). `wrangler deploy` with the deploy token. |
 | [`push-to-r2.sh`](push-to-r2.sh) | Copy an image from any source registry into R2 (streaming, parallel, resumable). |
 | [`setup.sh`](setup.sh) | One-time: create the bucket, mint the two small-scoped tokens, deploy the Worker. |
-| [`setup-domain.sh`](setup-domain.sh) | One-time: attach `dsv4-registry.lukaloehr.com` to the Worker. |
+| [`setup-domain.sh`](setup-domain.sh) | One-time: attach `dsv4-registry.lukaloehr.com` (or `REGISTRY_HOST`/`ZONE_NAME`) to the Worker. |
 
 ## Reproduce the whole thing
 

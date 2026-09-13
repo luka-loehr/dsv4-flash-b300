@@ -60,3 +60,24 @@ One pod with the checkpoint volume mounted does the whole thing —
 Publishing uses only the bucket-scoped R2 upload credential; no pull token, no GHCR.
 The R2 registry itself is set up once with [`cloudflare/setup.sh`](../cloudflare/setup.sh)
 and [`cloudflare/setup-domain.sh`](../cloudflare/setup-domain.sh).
+
+## Using your own registry
+
+`dsv4-registry.lukaloehr.com` is the public registry this project serves. To host
+the image yourself, deploy the Worker and bucket from [`cloudflare/`](../cloudflare/README.md),
+publish the image to your bucket, and point the scripts at your host:
+
+| Script | Variables |
+| :--- | :--- |
+| `cloudflare/setup.sh`, `cloudflare/push-to-r2.sh`, `ops/build-to-r2.sh` | `BUCKET` (default `dsv4-registry`) |
+| `cloudflare/setup-domain.sh` | `REGISTRY_HOST`, `ZONE_NAME`, `WORKER_NAME` |
+| `ops/build-on-runpod.sh` | `REGISTRY` (only used for the final message) |
+| `runpod/create-template.sh` | `REGISTRY`, `VERSION` |
+
+```bash
+REGISTRY_HOST=dsv4.example.com ZONE_NAME=example.com ./cloudflare/setup-domain.sh
+REGISTRY=dsv4.example.com ./runpod/create-template.sh
+docker run --gpus all -p 8000:8000 dsv4.example.com/dsv4-flash-b300:1.0.0
+```
+
+Also update `imageName` in [`runpod/template.json`](../runpod/template.json) if you use it.
